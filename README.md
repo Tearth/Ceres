@@ -4,7 +4,7 @@ CHIP-8 is an interpreted programming language which was first used on computer s
 
 Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/chip8/chip-8-games-pack.html (public domain license).
 
-# Keypad layout:
+# Keypad layout
 
 |||||
 |---|---|---|---|
@@ -45,8 +45,8 @@ Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/ch
 | Fx0A |LD Vx, K| wait for the key press and store symbol in register x    |
 | Fx15 |LD DT, Vx| set the delay timer to value of register x    |
 | Fx18 |LD DT, Vx| set the soung timer to value of register x    |
-| Fx1E |ADD I, Vx| add the value of register x to I (16 bit register)    |
-| Fx29 |LD F, Vx| set I (16 bit register) to the address of font specified in register x    |
-| Fx33 |LD B, Vx| store BCD representation of the value in register x at address specified in I (16 bit register)    |
+| Fx1E |ADD I, Vx| add the value of register x to I   |
+| Fx29 |LD F, Vx| set I to the address of font specified in register x    |
+| Fx33 |LD B, Vx| store BCD representation of the value in register x at address specified in I    |
 | Fx55 |LD [I], Vx| store registers from 0 to x in memory at the address specified in I    |
 | Fx65 |LD Vx, [I]| load registers from 0 to x in memory at the address specified in I    |
