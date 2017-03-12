@@ -1,6 +1,7 @@
 # Ceres: CHIP-8 emulator for .NET
+Version 1.0
 
-CHIP-8 is an interpreted programming language which was first used on computer systems at the break of 1970/1980. A typical device with CHIP-8 had 4kB RAM (where the first 512 bytes were reserved for the interpreter), 16 8-bit registers, one 16-bit register, 16-key hexadecimal keypad and 64-32 pixel display. Additional, the CHIP-8 supports two timers (delay and sound).
+CHIP-8 is an interpreted programming language which was first used on computer systems at the break of 1970/1980. A typical device with CHIP-8 had 4kB RAM (where the first 512 bytes were reserved for the interpreter), 16 8-bit registers, one 16-bit register, 16-key hexadecimal keypad and 64-32 pixel display. Additional, CHIP-8 supports two timers (delay and sound).
 
 Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/chip8/chip-8-games-pack.html (public domain license).
 
@@ -14,7 +15,7 @@ Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/ch
 |z|x|c|v|
 
 # Supported instructions
-| Opcode        | Name |  Long description   | 
+| Opcode        | Name |  Description   | 
 | ------------- | ---- | ------------------- |
 | 00E0          | CLS  | clear display | 
 | 00EE      	| RET  | return from subprogram      | 
