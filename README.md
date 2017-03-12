@@ -33,12 +33,12 @@ Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/ch
 | 8xy5 |SUB Vx, Vy| subtract the value of register y to register x     |
 | 8xy6 |SHR Vx, [Vy]| shift the value of register x right by one     |
 | 8xy7 |SUBN Vx, Vy| set register x to result of "the value of register y minus the value of register x"     |
-| 8xyE |SHL Vx, Vy| shift the value of register x left by one     |
+| 8xyE |SHL Vx, [Vy]| shift the value of register x left by one     |
 | 9xy0 |SNE Vx, Vy| skip next instruction if the value of register x is not equal to value of register y     |
 | Annn |LD I, addr| set I (16 bit register) to NNN    |
 | Bnnn |JP V0, addr| jump to address NNN + the value of register 0    |
 | Cxkk |RND Vx, byte| set register x to result "byte kk AND rnd[0-255]    | 
-| Dxyn |DRW Vx, Vy, nibblee| draw a sprite (8 pixels width, n pixels height) at position (the value of register x, the value of register y)    |
+| Dxyn |DRW Vx, Vy| draw a sprite (8 pixels width, n pixels height) at position (the value of register x, the value of register y)    |
 | Ex9E |SKP Vxe| skip the next instruction if the key which symbol is stored in register x is pressed    |
 | ExA1 |SKNP Vx| skip the next instruction if key which symbol is stored in register x is not pressed    |
 | Fx07 |LD Vx, DT| set register x to the value of delay timer    |

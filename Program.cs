@@ -12,6 +12,8 @@ namespace CHIP8
         {
             Console.SetWindowSize(64, 32);
             Console.WriteLine("Ceres: CHIP-8 Emulator");
+            Console.WriteLine("Version 1.0");
+            Console.WriteLine();
             Console.Write("File: ");
 
             var fileName = Console.ReadLine();
