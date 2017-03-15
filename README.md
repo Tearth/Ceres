@@ -7,7 +7,7 @@ Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/ch
 
 # Keypad layout
 
-|||||
+| | | | |
 |---|---|---|---|
 |1|2|3|4|
 |q|w|e|r|
