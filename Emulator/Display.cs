@@ -4,21 +4,23 @@ namespace CHIP8.Emulator
 {
     public class Display
     {
-        readonly bool[] _display = new bool[64 * 32];
+        private readonly bool[] _display = new bool[64 * 32];
 
         public void Init()
         {
-            for (int i = 0; i < _display.Length; i++)
+            for (var i = 0; i < _display.Length; i++)
             {
                 _display[i] = false;
             }
+
+            Console.CursorVisible = false;
         }
 
         public void Clear()
         {
             Console.BackgroundColor = ConsoleColor.Black;
 
-            for (int i = 0; i < _display.Length; i++)
+            for (var i = 0; i < _display.Length; i++)
             {
                 _display[i] = false;
                 var x = GetX((ushort)i);
@@ -48,12 +50,12 @@ namespace CHIP8.Emulator
             _display[position] = flag;
         }
 
-        ushort GetX(ushort position)
+        private ushort GetX(ushort position)
         {
             return (ushort)(position % 64);
         }
 
-        ushort GetY(ushort position)
+        private ushort GetY(ushort position)
         {
             return (ushort)(position / 64);
         }

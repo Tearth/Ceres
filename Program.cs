@@ -2,9 +2,9 @@
 
 namespace CHIP8
 {
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             Console.SetWindowSize(64, 32);
             Console.WriteLine("Ceres: CHIP-8 Emulator");

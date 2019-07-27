@@ -2,9 +2,9 @@
 {
     public class Memory
     {
-        readonly byte[] _memory = new byte[4096];
+        private readonly byte[] _memory = new byte[4096];
 
-        readonly byte[] _fontSet =
+        private readonly byte[] _fontSet =
         {
             0xF0, 0x90, 0x90, 0x90, 0xF0,
             0x20, 0x60, 0x20, 0x20, 0x70, 
@@ -26,12 +26,7 @@
 
         public void Init()
         {
-            for (int i = 0; i < _memory.Length; i++)
-            {
-                _memory[i] = 0;
-            }
-
-            for (int i = 0; i < _fontSet.Length; i++)
+            for (var i = 0; i < _fontSet.Length; i++)
             {
                 _memory[i] = _fontSet[i];
             }

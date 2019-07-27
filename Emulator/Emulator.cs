@@ -7,22 +7,22 @@ namespace CHIP8.Emulator
 {
     public class Emulator
     {
-        ushort _programCounter;
-        byte _delayTimer;
-        byte _soundTimer;
+        private ushort _programCounter;
+        private byte _delayTimer;
+        private byte _soundTimer;
 
-        readonly float _timersDeltaTime = 17;
-        readonly int _mainLoopDeltaTime = 1;
+        private readonly float _timersDeltaTime = 17;
+        private readonly int _mainLoopDeltaTime = 1;
 
-        readonly Random _random = new Random();
-        readonly Display _display = new Display();
-        readonly Memory _memory = new Memory();
-        readonly Registers _registers = new Registers();
-        readonly Keyboard _keyboard = new Keyboard();
-        readonly Stack _stack = new Stack();
+        private readonly Random _random = new Random();
+        private readonly Display _display = new Display();
+        private readonly Memory _memory = new Memory();
+        private readonly Registers _registers = new Registers();
+        private readonly Keyboard _keyboard = new Keyboard();
+        private readonly Stack _stack = new Stack();
 
-        readonly Stopwatch _mainWatch = new Stopwatch();
-        readonly Stopwatch _timersWatch = new Stopwatch();
+        private readonly Stopwatch _mainWatch = new Stopwatch();
+        private readonly Stopwatch _timersWatch = new Stopwatch();
 
         public void Init()
         {
@@ -37,13 +37,13 @@ namespace CHIP8.Emulator
             _programCounter = 512;
         }
 
-        public bool Load(String appFile)
+        public bool Load(string appFile)
         {
             if (!File.Exists(appFile))
                 return false;
 
             var app = File.ReadAllBytes(appFile);
-            for (int i = 0; i < app.Length; i++)
+            for (var i = 0; i < app.Length; i++)
             {
                 _memory.Write((ushort)(512 + i), app[i]);
             }
@@ -73,7 +73,7 @@ namespace CHIP8.Emulator
             }
         }
 
-        void UpdateTimers()
+        private void UpdateTimers()
         {
             var milliseconds = _timersWatch.ElapsedMilliseconds;
             if (milliseconds > _timersDeltaTime)
@@ -95,7 +95,7 @@ namespace CHIP8.Emulator
             }
         }
 
-        void Parse(int instruction)
+        private void Parse(int instruction)
         {
             switch (instruction & 0xF000)
             {
@@ -301,27 +301,27 @@ namespace CHIP8.Emulator
         }
 
         //00E0 - CLS
-        void ClearDisplay()
+        private void ClearDisplay()
         {
             _display.Clear();
         }
 
         //00EE - RET
-        void ReturnFromSubroutine()
+        private void ReturnFromSubroutine()
         {
             var addr = _stack.Pop();
             _programCounter = addr;
         }
 
         //1nnn - JP addr
-        void Jump(int instruction)
+        private void Jump(int instruction)
         {
             var addr = instruction & 0x0FFF;
             _programCounter = (ushort)(addr - 2);
         }
 
         //2nnn - CALL addr
-        void Call(int instruction)
+        private void Call(int instruction)
         {
             var addr = instruction & 0x0FFF;
 
@@ -330,7 +330,7 @@ namespace CHIP8.Emulator
         }
 
         //3xkk - SE Vx, byte
-        void SkipIfRegisterEqualByte(int instruction)
+        private void SkipIfRegisterEqualByte(int instruction)
         {
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
@@ -340,7 +340,7 @@ namespace CHIP8.Emulator
         }
 
         //4xkk - SNE Vx, byte
-        void SkipIfRegisterNotEqualByte(int instruction)
+        private void SkipIfRegisterNotEqualByte(int instruction)
         {
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
@@ -350,7 +350,7 @@ namespace CHIP8.Emulator
         }
 
         //5xy0 - SE Vx, Vy
-        void SkipIfRegisterEqualRegister(int instruction)
+        private void SkipIfRegisterEqualRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -360,7 +360,7 @@ namespace CHIP8.Emulator
         }
 
         //6xkk - LD Vx, byte
-        void SetByteToRegister(int instruction)
+        private void SetByteToRegister(int instruction)
         {
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
@@ -369,7 +369,7 @@ namespace CHIP8.Emulator
         }
 
         //7xkk - ADD Vx, byte
-        void AddByteToRegister(int instruction)
+        private void AddByteToRegister(int instruction)
         {
             var register = (byte)((instruction & 0x0F00) >> 8);
             var registerValue = _registers.GetRegister(register);
@@ -379,7 +379,7 @@ namespace CHIP8.Emulator
         }
 
         //8xy0 - LD Vx, Vy
-        void SetRegisterToRegister(int instruction)
+        private void SetRegisterToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -388,7 +388,7 @@ namespace CHIP8.Emulator
         }
 
         //8xy1 - OR Vx, Vy
-        void RegisterOrRegister(int instruction)
+        private void RegisterOrRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -398,7 +398,7 @@ namespace CHIP8.Emulator
         }
 
         //8xy2 - AND Vx, Vy
-        void RegisterAndRegister(int instruction)
+        private void RegisterAndRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -408,7 +408,7 @@ namespace CHIP8.Emulator
         }
 
         //8xy3 - XOR Vx, Vy
-        void RegisterXorRegister(int instruction)
+        private void RegisterXorRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -418,7 +418,7 @@ namespace CHIP8.Emulator
         }
 
         //8xy4 - ADD Vx, Vy
-        void AddRegisterToRegister(int instruction)
+        private void AddRegisterToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -430,19 +430,19 @@ namespace CHIP8.Emulator
         }
 
         //8xy5 - SUB Vx, Vy
-        void RegisterSubRegister(int instruction)
+        private void RegisterSubRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (_registers.GetRegister(reg1) - _registers.GetRegister(reg2));
+            var result = _registers.GetRegister(reg1) - _registers.GetRegister(reg2);
             _registers.SetRegister(15, result < 0 ? (byte) 0 : (byte) 1);
 
             _registers.SetRegister(reg1, (byte)result);
         }
 
         //8xy6 - SHR Vx {, Vy}
-        void RegisterShrRegister(int instruction)
+        private void RegisterShrRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
 
@@ -453,19 +453,19 @@ namespace CHIP8.Emulator
         }
 
         //8xy7 - SUBN Vx, Vy
-        void RegisterSubnRegister(int instruction)
+        private void RegisterSubnRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (_registers.GetRegister(reg2) - _registers.GetRegister(reg1));
+            var result = _registers.GetRegister(reg2) - _registers.GetRegister(reg1);
             _registers.SetRegister(15, result < 0 ? (byte) 0 : (byte) 1);
 
             _registers.SetRegister(reg1, (byte)result);
         }
 
         //8xyE - SHL Vx {, Vy}
-        void RegisterShlRegister(int instruction)
+        private void RegisterShlRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
 
@@ -476,7 +476,7 @@ namespace CHIP8.Emulator
         }
 
         //9xy0 - SNE Vx, Vy
-        void SkipIfRegisterNotEqualRegister(int instruction)
+        private void SkipIfRegisterNotEqualRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -486,7 +486,7 @@ namespace CHIP8.Emulator
         }
 
         //Annn - LD I, addr
-        void SetIValue(int instruction)
+        private void SetIValue(int instruction)
         {
             var value = (ushort)(instruction & 0x0FFF);
 
@@ -494,14 +494,14 @@ namespace CHIP8.Emulator
         }
 
         //Bnnn - JP V0, addr
-        void JumpAddRegister(int instruction)
+        private void JumpAddRegister(int instruction)
         {
             var addr = (ushort)(instruction & 0x0FFF);
-            _programCounter = (ushort)((addr + _registers.GetRegister(0)) - 2);
+            _programCounter = (ushort)(addr + _registers.GetRegister(0) - 2);
         }
 
         //Cxkk - RND Vx, byte
-        void Rand(int instruction)
+        private void Rand(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var value = (byte)(instruction & 0x00FF);
@@ -511,7 +511,7 @@ namespace CHIP8.Emulator
         }
 
         //Dxyn - DRW Vx, Vy, nibble
-        void Draw(int instruction)
+        private void Draw(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
@@ -523,11 +523,11 @@ namespace CHIP8.Emulator
             var address = _registers.GetAddressRegister();
 
             _registers.SetRegister(15, 0);
-            for (int y = 0; y < height; y++)
+            for (var y = 0; y < height; y++)
             {
                 var pixel = _memory.Read((ushort)(address + y));
                 var xLine = xPos;
-                for (int x = 0; x < 8; x++)
+                for (var x = 0; x < 8; x++)
                 {
                     if (xLine > 63)
                         xLine = 0;
@@ -535,7 +535,7 @@ namespace CHIP8.Emulator
                         yPos = 0;
 
                     var bit = (pixel & (0x80 >> x)) != 0;
-                    var position = (ushort)(xLine + (yPos * 64));
+                    var position = (ushort)(xLine + yPos * 64);
 
                     if (bit)
                     {
@@ -552,7 +552,7 @@ namespace CHIP8.Emulator
         }
 
         //Ex9E - SKP Vx
-        void SkipIfKeyPressed(int instruction)
+        private void SkipIfKeyPressed(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var keyCode = _registers.GetRegister(reg1);
@@ -561,7 +561,7 @@ namespace CHIP8.Emulator
         }
 
         //ExA1 - SKNP Vx
-        void SkipIfKeyNotPressed(int instruction)
+        private void SkipIfKeyNotPressed(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var keyCode = _registers.GetRegister(reg1);
@@ -570,14 +570,14 @@ namespace CHIP8.Emulator
         }
 
         //Fx07 - LD Vx, DT
-        void SetRegisterToDelayTime(int instruction)
+        private void SetRegisterToDelayTime(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             _registers.SetRegister(reg1, _delayTimer);
         }
 
         //Fx0A - LD Vx, K
-        void WaitForKey(int instruction)
+        private void WaitForKey(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var key = _keyboard.ReadKey();
@@ -586,21 +586,21 @@ namespace CHIP8.Emulator
         }
 
         //Fx15 - LD DT, Vx
-        void SetDelayTimeToRegister(int instruction)
+        private void SetDelayTimeToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             _delayTimer = _registers.GetRegister(reg1);
         }
 
         //Fx18 - LD ST, Vx
-        void SetSoundTimerToRegister(int instruction)
+        private void SetSoundTimerToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             _soundTimer = _registers.GetRegister(reg1);
         }
 
         //Fx1E - ADD I, Vx
-        void AddToI(int instruction)
+        private void AddToI(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var result = (ushort)(_registers.GetAddressRegister() + _registers.GetRegister(reg1));
@@ -608,7 +608,7 @@ namespace CHIP8.Emulator
         }
 
         //Fx29 - LD F, Vx
-        void SetIToFont(int instruction)
+        private void SetIToFont(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var position = _registers.GetRegister(reg1);
@@ -617,7 +617,7 @@ namespace CHIP8.Emulator
         }
 
         //Fx33 - LD B, Vx
-        void BcdRepresentation(int instruction)
+        private void BcdRepresentation(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var value = _registers.GetRegister(reg1);
@@ -637,7 +637,7 @@ namespace CHIP8.Emulator
         }
 
         //Fx55 - LD [I], Vx
-        void StoreRegistersInMemory(int instruction)
+        private void StoreRegistersInMemory(int instruction)
         {
             var address = _registers.GetAddressRegister();
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
@@ -649,7 +649,7 @@ namespace CHIP8.Emulator
         }
 
         //Fx65 - LD Vx, [I]
-        void ReadRegistersFromMemory(int instruction)
+        private void ReadRegistersFromMemory(int instruction)
         {
             var address = _registers.GetAddressRegister();
             var x = (byte)((instruction & 0x0F00) >> 8);

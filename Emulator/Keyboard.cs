@@ -13,7 +13,7 @@ namespace CHIP8.Emulator
            7	8	9	E
            A	0	B	F
        */
-        readonly Dictionary<byte, ConsoleKey> _keysBinding = new Dictionary<byte, ConsoleKey>()
+        private readonly Dictionary<byte, ConsoleKey> _keysBinding = new Dictionary<byte, ConsoleKey>
         {
             { 0x0, ConsoleKey.X },
             { 0x1, ConsoleKey.D1 },
@@ -44,14 +44,13 @@ namespace CHIP8.Emulator
         public bool IsKeyPressed(byte keyCode)
         {
             var key = _keysBinding[keyCode];
-            return ((GetKeyState((short)key) & 0x80) == 0x80);
+            return (GetKeyState((short)key) & 0x80) == 0x80;
         }
 
         public byte ReadKey()
         {
             var keyInfo = Console.ReadKey();
-            var keyCode = _keysBinding.First(p => p.Value == keyInfo.Key).Key;
-            return keyCode;
+            return _keysBinding.First(p => p.Value == keyInfo.Key).Key;
         }
     }
 }

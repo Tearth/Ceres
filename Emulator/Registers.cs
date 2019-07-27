@@ -2,17 +2,12 @@
 {
     public class Registers
     {
-        readonly byte[] _registers = new byte[16];
-        ushort _addressRegister;
+        private readonly byte[] _registers = new byte[16];
+        private ushort _addressRegister;
 
         public void Init()
         {
-            for (int i = 0; i < _registers.Length; i++)
-            {
-                _registers[i] = 0;
-            }
 
-            _addressRegister = 0;
         }
 
         public byte GetRegister(byte id)
