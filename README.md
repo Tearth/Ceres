@@ -51,3 +51,9 @@ Games for CHIP-8 emulator can be downloaded from http://www.zophar.net/pdroms/ch
 | Fx33 |LD B, Vx| stores BCD representation of the value in register x at address specified in I    |
 | Fx55 |LD [I], Vx| stores registers from 0 to x in memory at the address specified in I    |
 | Fx65 |LD Vx, [I]| loads registers from 0 to x in memory at the address specified in I    |
+
+# Examples
+
+![Example 1](https://i.imgur.com/D90nhmu.png)
+![Example 2](https://i.imgur.com/bOs3b2E.png)
+![Example 3](https://i.imgur.com/hIoNRSS.png)
