@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CHIP8
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Console.SetWindowSize(64, 32);
             Console.WriteLine("Ceres: CHIP-8 Emulator");
@@ -19,7 +15,7 @@ namespace CHIP8
             var fileName = Console.ReadLine();
             Console.Clear();
             
-            var emulator = new Emulator();
+            var emulator = new Emulator.Emulator();
             emulator.Init();
             if (emulator.Load(fileName))
                 emulator.Run();

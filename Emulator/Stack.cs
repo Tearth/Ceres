@@ -1,36 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CHIP8
+﻿namespace CHIP8.Emulator
 {
     public class Stack
     {
-        ushort[] stack = new ushort[16];
-        byte stackPointer;
+        readonly ushort[] _stack = new ushort[16];
+        byte _stackPointer;
 
         public void Init()
         {
-            for(int i=0; i<stack.Length; i++)
+            for(int i=0; i<_stack.Length; i++)
             {
-                stack[i] = 0;
+                _stack[i] = 0;
             }
 
-            stackPointer = 0;
+            _stackPointer = 0;
         }
 
         public void Push(ushort value)
         {
-            stack[stackPointer] = value;
-            stackPointer++;
+            _stack[_stackPointer] = value;
+            _stackPointer++;
         }
 
         public ushort Pop()
         {
-            stackPointer--;
-            return stack[stackPointer];
+            _stackPointer--;
+            return _stack[_stackPointer];
         }
     }
 }

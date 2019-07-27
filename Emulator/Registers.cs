@@ -1,49 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CHIP8
+﻿namespace CHIP8.Emulator
 {
     public class Registers
     {
-        byte[] registers = new byte[16];
-        ushort addressRegister;
-
-        public Registers()
-        {
-
-        }
+        readonly byte[] _registers = new byte[16];
+        ushort _addressRegister;
 
         public void Init()
         {
-            for (int i = 0; i < registers.Length; i++)
+            for (int i = 0; i < _registers.Length; i++)
             {
-                registers[i] = 0;
+                _registers[i] = 0;
             }
 
-            addressRegister = 0;
+            _addressRegister = 0;
         }
 
         public byte GetRegister(byte id)
         {
-            return registers[id];
+            return _registers[id];
         }
 
         public void SetRegister(byte id, byte value)
         {
-            registers[id] = value;
+            _registers[id] = value;
         }
 
-        public ushort GetaddressRegsiter()
+        public ushort GetAddressRegister()
         {
-            return addressRegister;
+            return _addressRegister;
         }
 
-        public void SetaddressRegister(ushort value)
+        public void SetAddressRegister(ushort value)
         {
-            addressRegister = value;
+            _addressRegister = value;
         }
     }
 }

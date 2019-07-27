@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace CHIP8
+namespace CHIP8.Emulator
 {
     public class Keyboard
     {
@@ -16,7 +13,7 @@ namespace CHIP8
            7	8	9	E
            A	0	B	F
        */
-        Dictionary<byte, ConsoleKey> keysBinding = new Dictionary<byte, ConsoleKey>()
+        readonly Dictionary<byte, ConsoleKey> _keysBinding = new Dictionary<byte, ConsoleKey>()
         {
             { 0x0, ConsoleKey.X },
             { 0x1, ConsoleKey.D1 },
@@ -39,11 +36,6 @@ namespace CHIP8
         [DllImport("user32.dll")]
         public static extern ushort GetKeyState(short nVirtKey);
 
-        public Keyboard()
-        {
-
-        }
-
         public void Init()
         {
 
@@ -51,16 +43,14 @@ namespace CHIP8
 
         public bool IsKeyPressed(byte keyCode)
         {
-            var key = keysBinding[keyCode];
+            var key = _keysBinding[keyCode];
             return ((GetKeyState((short)key) & 0x80) == 0x80);
         }
 
         public byte ReadKey()
         {
             var keyInfo = Console.ReadKey();
-            var keyCode = keysBinding.Where(p => p.Value == keyInfo.Key)
-                                     .First()
-                                     .Key;
+            var keyCode = _keysBinding.First(p => p.Value == keyInfo.Key).Key;
             return keyCode;
         }
     }

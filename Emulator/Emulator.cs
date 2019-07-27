@@ -1,50 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Threading;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
 
-namespace CHIP8
+namespace CHIP8.Emulator
 {
     public class Emulator
     {
-        ushort programCounter;
-        byte delayTimer;
-        byte soundTimer;
+        ushort _programCounter;
+        byte _delayTimer;
+        byte _soundTimer;
 
-        float timersDeltaTime = 17;
-        int mainLoopDeltaTime = 1;
+        readonly float _timersDeltaTime = 17;
+        readonly int _mainLoopDeltaTime = 1;
 
-        Random random = new Random();
-        Display display = new Display();
-        Memory memory = new Memory();
-        Registers registers = new Registers();
-        Keyboard keyboard = new Keyboard();
-        Stack stack = new Stack();
+        readonly Random _random = new Random();
+        readonly Display _display = new Display();
+        readonly Memory _memory = new Memory();
+        readonly Registers _registers = new Registers();
+        readonly Keyboard _keyboard = new Keyboard();
+        readonly Stack _stack = new Stack();
 
-        Stopwatch mainWatch = new Stopwatch();
-        Stopwatch timersWatch = new Stopwatch();
-
-        public Emulator()
-        {
-
-        }
+        readonly Stopwatch _mainWatch = new Stopwatch();
+        readonly Stopwatch _timersWatch = new Stopwatch();
 
         public void Init()
         {
-            display.Init();
-            memory.Init();
-            registers.Init();
-            keyboard.Init();
-            stack.Init();
+            _display.Init();
+            _memory.Init();
+            _registers.Init();
+            _keyboard.Init();
+            _stack.Init();
 
-            delayTimer = 0;
-            soundTimer = 0;
-            programCounter = 512;
+            _delayTimer = 0;
+            _soundTimer = 0;
+            _programCounter = 512;
         }
 
         public bool Load(String appFile)
@@ -55,7 +45,7 @@ namespace CHIP8
             var app = File.ReadAllBytes(appFile);
             for (int i = 0; i < app.Length; i++)
             {
-                memory.Write((ushort)(512 + i), app[i]);
+                _memory.Write((ushort)(512 + i), app[i]);
             }
 
             return true;
@@ -63,45 +53,45 @@ namespace CHIP8
 
         public void Run()
         {
-            mainWatch.Start();
-            timersWatch.Start();
+            _mainWatch.Start();
+            _timersWatch.Start();
 
             while (true)
             {
-                var miliseconds = mainWatch.ElapsedMilliseconds;
-                if (miliseconds > mainLoopDeltaTime)
+                var milliseconds = _mainWatch.ElapsedMilliseconds;
+                if (milliseconds > _mainLoopDeltaTime)
                 {
-                    mainWatch.Restart();
+                    _mainWatch.Restart();
 
-                    var instruction = memory.Read(programCounter) << 8 | memory.Read((ushort)(programCounter + 1));
+                    var instruction = _memory.Read(_programCounter) << 8 | _memory.Read((ushort)(_programCounter + 1));
 
                     UpdateTimers();
                     Parse(instruction);
 
-                    programCounter += 2;
+                    _programCounter += 2;
                 }
             }
         }
 
         void UpdateTimers()
         {
-            var miliseconds = timersWatch.ElapsedMilliseconds;
-            if (miliseconds > timersDeltaTime)
+            var milliseconds = _timersWatch.ElapsedMilliseconds;
+            if (milliseconds > _timersDeltaTime)
             {
-                timersWatch.Restart();
+                _timersWatch.Restart();
 
-                if (delayTimer > 0)
-                    delayTimer--;
+                if (_delayTimer > 0)
+                    _delayTimer--;
                 else
-                    delayTimer = 0;
+                    _delayTimer = 0;
 
-                if (soundTimer > 0)
+                if (_soundTimer > 0)
                 {
-                    new Thread(() => { Console.Beep(); }).Start();
-                    soundTimer--;
+                    new Thread(Console.Beep).Start();
+                    _soundTimer--;
                 }
                 else
-                    soundTimer = 0;
+                    _soundTimer = 0;
             }
         }
 
@@ -123,7 +113,6 @@ namespace CHIP8
                                     ReturnFromSubroutine();
                                     break;
                                 }
-                            default: { break; }
                         }
                         break;
                     }
@@ -211,7 +200,6 @@ namespace CHIP8
                                     RegisterShlRegister(instruction);
                                     break;
                                 }
-                            default: { break; }
                         }
                         break;
                     }
@@ -254,7 +242,6 @@ namespace CHIP8
                                     SkipIfKeyNotPressed(instruction);
                                     break;
                                 }
-                            default: { break; }
                         }
                         break;
                     }
@@ -294,7 +281,7 @@ namespace CHIP8
                                 }
                             case 0xF033:
                                 {
-                                    BCDRepresentation(instruction);
+                                    BcdRepresentation(instruction);
                                     break;
                                 }
                             case 0xF055:
@@ -307,32 +294,30 @@ namespace CHIP8
                                     ReadRegistersFromMemory(instruction);
                                     break;
                                 }
-                            default: { break; }
                         }
                         break;
                     }
-                default: { break; }
             }
         }
 
         //00E0 - CLS
         void ClearDisplay()
         {
-            display.Clear();
+            _display.Clear();
         }
 
         //00EE - RET
         void ReturnFromSubroutine()
         {
-            var addr = stack.Pop();
-            programCounter = (ushort)(addr);
+            var addr = _stack.Pop();
+            _programCounter = addr;
         }
 
         //1nnn - JP addr
         void Jump(int instruction)
         {
             var addr = instruction & 0x0FFF;
-            programCounter = (ushort)(addr - 2);
+            _programCounter = (ushort)(addr - 2);
         }
 
         //2nnn - CALL addr
@@ -340,8 +325,8 @@ namespace CHIP8
         {
             var addr = instruction & 0x0FFF;
 
-            stack.Push(programCounter);
-            programCounter = (ushort)(addr - 2);
+            _stack.Push(_programCounter);
+            _programCounter = (ushort)(addr - 2);
         }
 
         //3xkk - SE Vx, byte
@@ -350,8 +335,8 @@ namespace CHIP8
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
 
-            if (registers.GetRegister(register) == byteVar)
-                programCounter += 2;
+            if (_registers.GetRegister(register) == byteVar)
+                _programCounter += 2;
         }
 
         //4xkk - SNE Vx, byte
@@ -360,8 +345,8 @@ namespace CHIP8
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
 
-            if (registers.GetRegister(register) != byteVar)
-                programCounter += 2;
+            if (_registers.GetRegister(register) != byteVar)
+                _programCounter += 2;
         }
 
         //5xy0 - SE Vx, Vy
@@ -370,8 +355,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            if (registers.GetRegister(reg1) == registers.GetRegister(reg2))
-                programCounter += 2;
+            if (_registers.GetRegister(reg1) == _registers.GetRegister(reg2))
+                _programCounter += 2;
         }
 
         //6xkk - LD Vx, byte
@@ -380,17 +365,17 @@ namespace CHIP8
             var register = (byte)((instruction & 0x0F00) >> 8);
             var byteVar = instruction & 0x00FF;
 
-            registers.SetRegister(register, (byte)byteVar);
+            _registers.SetRegister(register, (byte)byteVar);
         }
 
         //7xkk - ADD Vx, byte
         void AddByteToRegister(int instruction)
         {
             var register = (byte)((instruction & 0x0F00) >> 8);
-            var registerValue = registers.GetRegister(register);
+            var registerValue = _registers.GetRegister(register);
             var byteVar = instruction & 0x00FF;
 
-            registers.SetRegister(register, (byte)(byteVar + registerValue));
+            _registers.SetRegister(register, (byte)(byteVar + registerValue));
         }
 
         //8xy0 - LD Vx, Vy
@@ -399,7 +384,7 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            registers.SetRegister(reg1, registers.GetRegister(reg2));
+            _registers.SetRegister(reg1, _registers.GetRegister(reg2));
         }
 
         //8xy1 - OR Vx, Vy
@@ -408,8 +393,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (byte)(registers.GetRegister(reg1) | registers.GetRegister(reg2));
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_registers.GetRegister(reg1) | _registers.GetRegister(reg2));
+            _registers.SetRegister(reg1, result);
         }
 
         //8xy2 - AND Vx, Vy
@@ -418,8 +403,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (byte)(registers.GetRegister(reg1) & registers.GetRegister(reg2));
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_registers.GetRegister(reg1) & _registers.GetRegister(reg2));
+            _registers.SetRegister(reg1, result);
         }
 
         //8xy3 - XOR Vx, Vy
@@ -428,8 +413,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (byte)(registers.GetRegister(reg1) ^ registers.GetRegister(reg2));
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_registers.GetRegister(reg1) ^ _registers.GetRegister(reg2));
+            _registers.SetRegister(reg1, result);
         }
 
         //8xy4 - ADD Vx, Vy
@@ -438,13 +423,10 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (ushort)(registers.GetRegister(reg1) + registers.GetRegister(reg2));
-            if (result > 255)
-                registers.SetRegister(15, 1);
-            else
-                registers.SetRegister(15, 0);
+            var result = (ushort)(_registers.GetRegister(reg1) + _registers.GetRegister(reg2));
+            _registers.SetRegister(15, result > 255 ? (byte) 1 : (byte) 0);
 
-            registers.SetRegister(reg1, (byte)result);
+            _registers.SetRegister(reg1, (byte)result);
         }
 
         //8xy5 - SUB Vx, Vy
@@ -453,33 +435,21 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (registers.GetRegister(reg1) - registers.GetRegister(reg2));
-            if (result < 0)
-            {
-                //result *= -1;
-                registers.SetRegister(15, 0);
-            }
-            else
-            {
-                registers.SetRegister(15, 1);
-            }
+            var result = (_registers.GetRegister(reg1) - _registers.GetRegister(reg2));
+            _registers.SetRegister(15, result < 0 ? (byte) 0 : (byte) 1);
 
-            registers.SetRegister(reg1, (byte)result);
+            _registers.SetRegister(reg1, (byte)result);
         }
 
         //8xy6 - SHR Vx {, Vy}
         void RegisterShrRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            if ((byte)(registers.GetRegister(reg1) & 1) == 1)
-                registers.SetRegister(15, 1);
-            else
-                registers.SetRegister(15, 0);
+            _registers.SetRegister(15, (byte) (_registers.GetRegister(reg1) & 1) == 1 ? (byte) 1 : (byte) 0);
 
-            var result = (byte)(registers.GetRegister(reg1) >> 1);
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_registers.GetRegister(reg1) >> 1);
+            _registers.SetRegister(reg1, result);
         }
 
         //8xy7 - SUBN Vx, Vy
@@ -488,33 +458,21 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            var result = (registers.GetRegister(reg2) - registers.GetRegister(reg1));
-            if (result < 0)
-            {
-                //result *= -1;
-                registers.SetRegister(15, 0);
-            }
-            else
-            {
-                registers.SetRegister(15, 1);
-            }
+            var result = (_registers.GetRegister(reg2) - _registers.GetRegister(reg1));
+            _registers.SetRegister(15, result < 0 ? (byte) 0 : (byte) 1);
 
-            registers.SetRegister(reg1, (byte)result);
+            _registers.SetRegister(reg1, (byte)result);
         }
 
         //8xyE - SHL Vx {, Vy}
         void RegisterShlRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            if ((byte)(registers.GetRegister(reg1) & 0x80) == 1)
-                registers.SetRegister(15, 1);
-            else
-                registers.SetRegister(15, 0);
+            _registers.SetRegister(15, (byte) (_registers.GetRegister(reg1) & 0x80) == 1 ? (byte) 1 : (byte) 0);
 
-            var result = (byte)(registers.GetRegister(reg1) << 1);
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_registers.GetRegister(reg1) << 1);
+            _registers.SetRegister(reg1, result);
         }
 
         //9xy0 - SNE Vx, Vy
@@ -523,8 +481,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
-            if (registers.GetRegister(reg1) != registers.GetRegister(reg2))
-                programCounter += 2;
+            if (_registers.GetRegister(reg1) != _registers.GetRegister(reg2))
+                _programCounter += 2;
         }
 
         //Annn - LD I, addr
@@ -532,14 +490,14 @@ namespace CHIP8
         {
             var value = (ushort)(instruction & 0x0FFF);
 
-            registers.SetaddressRegister(value);
+            _registers.SetAddressRegister(value);
         }
 
         //Bnnn - JP V0, addr
         void JumpAddRegister(int instruction)
         {
             var addr = (ushort)(instruction & 0x0FFF);
-            programCounter = (ushort)((addr + registers.GetRegister(0)) - 2);
+            _programCounter = (ushort)((addr + _registers.GetRegister(0)) - 2);
         }
 
         //Cxkk - RND Vx, byte
@@ -548,8 +506,8 @@ namespace CHIP8
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var value = (byte)(instruction & 0x00FF);
 
-            var result = (byte)(random.Next(0, 255) & value);
-            registers.SetRegister(reg1, result);
+            var result = (byte)(_random.Next(0, 255) & value);
+            _registers.SetRegister(reg1, result);
         }
 
         //Dxyn - DRW Vx, Vy, nibble
@@ -559,35 +517,31 @@ namespace CHIP8
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
             var height = instruction & 0x000F;
 
-            var xPos = registers.GetRegister(reg1);
-            var yPos = registers.GetRegister(reg2);
+            var xPos = _registers.GetRegister(reg1);
+            var yPos = _registers.GetRegister(reg2);
 
-            var address = registers.GetaddressRegsiter();
+            var address = _registers.GetAddressRegister();
 
-            registers.SetRegister(15, 0);
+            _registers.SetRegister(15, 0);
             for (int y = 0; y < height; y++)
             {
-                var pixel = memory.Read((ushort)(address + y));
+                var pixel = _memory.Read((ushort)(address + y));
                 var xLine = xPos;
                 for (int x = 0; x < 8; x++)
                 {
                     if (xLine > 63)
                         xLine = 0;
-                    if (xLine < 0)
-                        xLine = 63;
                     if (yPos > 31)
                         yPos = 0;
-                    if (yPos < 0)
-                        yPos = 31;
 
                     var bit = (pixel & (0x80 >> x)) != 0;
                     var position = (ushort)(xLine + (yPos * 64));
 
                     if (bit)
                     {
-                        if (display.GetPixel(position))
-                            registers.SetRegister(15, 1);
-                        display.SetPixel(position);
+                        if (_display.GetPixel(position))
+                            _registers.SetRegister(15, 1);
+                        _display.SetPixel(position);
                     }
 
                     xLine++;
@@ -601,72 +555,72 @@ namespace CHIP8
         void SkipIfKeyPressed(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var keyCode = registers.GetRegister(reg1);
-            if (keyboard.IsKeyPressed(keyCode))
-                programCounter += 2;
+            var keyCode = _registers.GetRegister(reg1);
+            if (_keyboard.IsKeyPressed(keyCode))
+                _programCounter += 2;
         }
 
         //ExA1 - SKNP Vx
         void SkipIfKeyNotPressed(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var keyCode = registers.GetRegister(reg1);
-            if (!keyboard.IsKeyPressed(keyCode))
-                programCounter += 2;
+            var keyCode = _registers.GetRegister(reg1);
+            if (!_keyboard.IsKeyPressed(keyCode))
+                _programCounter += 2;
         }
 
         //Fx07 - LD Vx, DT
         void SetRegisterToDelayTime(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            registers.SetRegister(reg1, delayTimer);
+            _registers.SetRegister(reg1, _delayTimer);
         }
 
         //Fx0A - LD Vx, K
         void WaitForKey(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var key = keyboard.ReadKey();
+            var key = _keyboard.ReadKey();
 
-            registers.SetRegister(reg1, key);
+            _registers.SetRegister(reg1, key);
         }
 
         //Fx15 - LD DT, Vx
         void SetDelayTimeToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            delayTimer = registers.GetRegister(reg1);
+            _delayTimer = _registers.GetRegister(reg1);
         }
 
         //Fx18 - LD ST, Vx
         void SetSoundTimerToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            soundTimer = registers.GetRegister(reg1);
+            _soundTimer = _registers.GetRegister(reg1);
         }
 
         //Fx1E - ADD I, Vx
         void AddToI(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var result = (ushort)(registers.GetaddressRegsiter() + registers.GetRegister(reg1));
-            registers.SetaddressRegister(result);
+            var result = (ushort)(_registers.GetAddressRegister() + _registers.GetRegister(reg1));
+            _registers.SetAddressRegister(result);
         }
 
         //Fx29 - LD F, Vx
         void SetIToFont(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var position = registers.GetRegister(reg1);
+            var position = _registers.GetRegister(reg1);
             var result = (ushort)(position * 5);
-            registers.SetaddressRegister(result);
+            _registers.SetAddressRegister(result);
         }
 
         //Fx33 - LD B, Vx
-        void BCDRepresentation(int instruction)
+        void BcdRepresentation(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            var value = registers.GetRegister(reg1);
+            var value = _registers.GetRegister(reg1);
 
             var ones = value % 10;
             value /= 10;
@@ -676,34 +630,34 @@ namespace CHIP8
 
             var hundreds = value;
 
-            var address = registers.GetaddressRegsiter();
-            memory.Write((ushort)(address), (byte)hundreds);
-            memory.Write((ushort)(address + 1), (byte)tens);
-            memory.Write((ushort)(address + 2), (byte)ones);
+            var address = _registers.GetAddressRegister();
+            _memory.Write(address, hundreds);
+            _memory.Write((ushort)(address + 1), (byte)tens);
+            _memory.Write((ushort)(address + 2), (byte)ones);
         }
 
         //Fx55 - LD [I], Vx
         void StoreRegistersInMemory(int instruction)
         {
-            var address = registers.GetaddressRegsiter();
+            var address = _registers.GetAddressRegister();
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
 
             for (byte i = 0; i <= reg1; i++)
             {
-                memory.Write((ushort)(address + i), registers.GetRegister(i));
+                _memory.Write((ushort)(address + i), _registers.GetRegister(i));
             }
         }
 
         //Fx65 - LD Vx, [I]
         void ReadRegistersFromMemory(int instruction)
         {
-            var address = registers.GetaddressRegsiter();
+            var address = _registers.GetAddressRegister();
             var x = (byte)((instruction & 0x0F00) >> 8);
 
             for (byte i = 0; i <= x; i++)
             {
-                var value = memory.Read((ushort)(address + i));
-                registers.SetRegister(i, value);
+                var value = _memory.Read((ushort)(address + i));
+                _registers.SetRegister(i, value);
             }
         }
     }

@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 
-namespace CHIP8
+namespace CHIP8.Emulator
 {
     public class Display
     {
-        bool[] display = new bool[64 * 32];
-
-        public Display()
-        {
-
-        }
+        readonly bool[] _display = new bool[64 * 32];
 
         public void Init()
         {
-            for (int i = 0; i < display.Length; i++)
+            for (int i = 0; i < _display.Length; i++)
             {
-                display[i] = false;
+                _display[i] = false;
             }
         }
 
@@ -28,9 +18,9 @@ namespace CHIP8
         {
             Console.BackgroundColor = ConsoleColor.Black;
 
-            for (int i = 0; i < display.Length; i++)
+            for (int i = 0; i < _display.Length; i++)
             {
-                display[i] = false;
+                _display[i] = false;
                 var x = GetX((ushort)i);
                 var y = GetY((ushort)i);
 
@@ -41,7 +31,7 @@ namespace CHIP8
 
         public bool GetPixel(ushort position)
         {
-            return display[position];
+            return _display[position];
         }
 
         public void SetPixel(ushort position)
@@ -49,16 +39,13 @@ namespace CHIP8
             var x = GetX(position);
             var y = GetY(position);
 
-            var flag = display[position] ^ true;
-            if (flag)
-                Console.BackgroundColor = ConsoleColor.White;
-            else
-                Console.BackgroundColor = ConsoleColor.Black;
+            var flag = _display[position] ^ true;
+            Console.BackgroundColor = flag ? ConsoleColor.White : ConsoleColor.Black;
 
             Console.SetCursorPosition(x, y);
             Console.Write(" ");
 
-            display[position] = flag;
+            _display[position] = flag;
         }
 
         ushort GetX(ushort position)
