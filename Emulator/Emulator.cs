@@ -7,10 +7,6 @@ namespace CHIP8.Emulator
 {
     public class Emulator
     {
-        private ushort _programCounter;
-        private byte _delayTimer;
-        private byte _soundTimer;
-
         private readonly float _timersDeltaTime = 17;
         private readonly int _mainLoopDeltaTime = 1;
 
@@ -31,10 +27,6 @@ namespace CHIP8.Emulator
             _registers.Init();
             _keyboard.Init();
             _stack.Init();
-
-            _delayTimer = 0;
-            _soundTimer = 0;
-            _programCounter = 512;
         }
 
         public bool Load(string appFile)
@@ -63,13 +55,15 @@ namespace CHIP8.Emulator
                 {
                     _mainWatch.Restart();
 
-                    var instruction = _memory.Read(_programCounter) << 8 | _memory.Read((ushort)(_programCounter + 1));
+                    var programCounter = _registers.GetProgramCounter();
+                    var instruction = _memory.Read(programCounter) << 8 | _memory.Read((ushort)(programCounter + 1));
 
-                    UpdateTimers();
                     Parse(instruction);
 
-                    _programCounter += 2;
+                    _registers.IncProgramCounter(2);
                 }
+
+                UpdateTimers();
             }
         }
 
@@ -80,18 +74,24 @@ namespace CHIP8.Emulator
             {
                 _timersWatch.Restart();
 
-                if (_delayTimer > 0)
-                    _delayTimer--;
-                else
-                    _delayTimer = 0;
-
-                if (_soundTimer > 0)
+                if (_registers.GetDelayTimerRegister() > 0)
                 {
-                    new Thread(Console.Beep).Start();
-                    _soundTimer--;
+                    _registers.DecDelayTimerRegister(1);
                 }
                 else
-                    _soundTimer = 0;
+                {
+                    _registers.SetDelayTimerRegister(0);
+                }
+
+                if (_registers.GetSoundTimerRegister() > 0)
+                {
+                    new Thread(Console.Beep).Start();
+                    _registers.DecSoundTimerRegister(1);
+                }
+                else
+                {
+                    _registers.SetSoundTimerRegister(0);
+                }
             }
         }
 
@@ -310,14 +310,14 @@ namespace CHIP8.Emulator
         private void ReturnFromSubroutine()
         {
             var addr = _stack.Pop();
-            _programCounter = addr;
+            _registers.SetProgramCounter(addr);
         }
 
         //1nnn - JP addr
         private void Jump(int instruction)
         {
             var addr = instruction & 0x0FFF;
-            _programCounter = (ushort)(addr - 2);
+            _registers.SetProgramCounter((ushort)(addr - 2));
         }
 
         //2nnn - CALL addr
@@ -325,8 +325,8 @@ namespace CHIP8.Emulator
         {
             var addr = instruction & 0x0FFF;
 
-            _stack.Push(_programCounter);
-            _programCounter = (ushort)(addr - 2);
+            _stack.Push(_registers.GetProgramCounter());
+            _registers.SetProgramCounter((ushort)(addr - 2));
         }
 
         //3xkk - SE Vx, byte
@@ -336,7 +336,9 @@ namespace CHIP8.Emulator
             var byteVar = instruction & 0x00FF;
 
             if (_registers.GetRegister(register) == byteVar)
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //4xkk - SNE Vx, byte
@@ -346,7 +348,9 @@ namespace CHIP8.Emulator
             var byteVar = instruction & 0x00FF;
 
             if (_registers.GetRegister(register) != byteVar)
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //5xy0 - SE Vx, Vy
@@ -356,7 +360,9 @@ namespace CHIP8.Emulator
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
             if (_registers.GetRegister(reg1) == _registers.GetRegister(reg2))
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //6xkk - LD Vx, byte
@@ -482,7 +488,9 @@ namespace CHIP8.Emulator
             var reg2 = (byte)((instruction & 0x00F0) >> 4);
 
             if (_registers.GetRegister(reg1) != _registers.GetRegister(reg2))
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //Annn - LD I, addr
@@ -497,7 +505,7 @@ namespace CHIP8.Emulator
         private void JumpAddRegister(int instruction)
         {
             var addr = (ushort)(instruction & 0x0FFF);
-            _programCounter = (ushort)(addr + _registers.GetRegister(0) - 2);
+            _registers.SetProgramCounter((ushort)(addr + _registers.GetRegister(0) - 2));
         }
 
         //Cxkk - RND Vx, byte
@@ -527,12 +535,18 @@ namespace CHIP8.Emulator
             {
                 var pixel = _memory.Read((ushort)(address + y));
                 var xLine = xPos;
+
                 for (var x = 0; x < 8; x++)
                 {
                     if (xLine > 63)
+                    {
                         xLine = 0;
+                    }
+
                     if (yPos > 31)
+                    {
                         yPos = 0;
+                    }
 
                     var bit = (pixel & (0x80 >> x)) != 0;
                     var position = (ushort)(xLine + yPos * 64);
@@ -540,7 +554,10 @@ namespace CHIP8.Emulator
                     if (bit)
                     {
                         if (_display.GetPixel(position))
+                        {
                             _registers.SetRegister(15, 1);
+                        }
+
                         _display.SetPixel(position);
                     }
 
@@ -556,8 +573,11 @@ namespace CHIP8.Emulator
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var keyCode = _registers.GetRegister(reg1);
+
             if (_keyboard.IsKeyPressed(keyCode))
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //ExA1 - SKNP Vx
@@ -565,15 +585,18 @@ namespace CHIP8.Emulator
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
             var keyCode = _registers.GetRegister(reg1);
+
             if (!_keyboard.IsKeyPressed(keyCode))
-                _programCounter += 2;
+            {
+                _registers.IncProgramCounter(2);
+            }
         }
 
         //Fx07 - LD Vx, DT
         private void SetRegisterToDelayTime(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            _registers.SetRegister(reg1, _delayTimer);
+            _registers.SetRegister(reg1, _registers.GetDelayTimerRegister());
         }
 
         //Fx0A - LD Vx, K
@@ -589,14 +612,14 @@ namespace CHIP8.Emulator
         private void SetDelayTimeToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            _delayTimer = _registers.GetRegister(reg1);
+            _registers.SetDelayTimerRegister(_registers.GetRegister(reg1));
         }
 
         //Fx18 - LD ST, Vx
         private void SetSoundTimerToRegister(int instruction)
         {
             var reg1 = (byte)((instruction & 0x0F00) >> 8);
-            _soundTimer = _registers.GetRegister(reg1);
+            _registers.SetSoundTimerRegister(_registers.GetRegister(reg1));
         }
 
         //Fx1E - ADD I, Vx

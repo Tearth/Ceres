@@ -7,6 +7,9 @@ namespace CHIP8
         private static void Main()
         {
             Console.SetWindowSize(64, 32);
+            Console.SetBufferSize(64, 32);
+            Console.CursorVisible = false;
+
             Console.WriteLine("Ceres: CHIP-8 Emulator");
             Console.WriteLine();
             Console.Write("File: ");

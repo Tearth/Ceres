@@ -2,8 +2,8 @@
 {
     public class Stack
     {
-        private readonly ushort[] _stack = new ushort[16];
         private byte _stackPointer;
+        private readonly ushort[] _stack = new ushort[16];
 
         public void Init()
         {

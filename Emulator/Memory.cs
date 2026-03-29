@@ -3,7 +3,6 @@
     public class Memory
     {
         private readonly byte[] _memory = new byte[4096];
-
         private readonly byte[] _fontSet =
         {
             0xF0, 0x90, 0x90, 0x90, 0xF0,

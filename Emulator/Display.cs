@@ -8,12 +8,7 @@ namespace CHIP8.Emulator
 
         public void Init()
         {
-            for (var i = 0; i < _display.Length; i++)
-            {
-                _display[i] = false;
-            }
 
-            Console.CursorVisible = false;
         }
 
         public void Clear()
@@ -23,6 +18,7 @@ namespace CHIP8.Emulator
             for (var i = 0; i < _display.Length; i++)
             {
                 _display[i] = false;
+
                 var x = GetX((ushort)i);
                 var y = GetY((ushort)i);
 
@@ -40,10 +36,9 @@ namespace CHIP8.Emulator
         {
             var x = GetX(position);
             var y = GetY(position);
-
             var flag = _display[position] ^ true;
-            Console.BackgroundColor = flag ? ConsoleColor.White : ConsoleColor.Black;
 
+            Console.BackgroundColor = flag ? ConsoleColor.White : ConsoleColor.Black;
             Console.SetCursorPosition(x, y);
             Console.Write(" ");
 
